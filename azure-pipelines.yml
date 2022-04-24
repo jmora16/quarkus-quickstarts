@@ -14,10 +14,26 @@ jobs:
   variables:
     imageName: 'quarkus:$(build.buildId)'  
   steps:
-
-  - task: Maven@3
-    displayName: 'Maven Build'
+  - task: DotNetCoreCLI@2
     inputs:
-      goals: 'verify'
-      options: '--settings azure-mvn-settings.xml -B -Pquarkus -Dnative-image.docker-build -Pnative -Dnative-image.xmx=4g'
-
+      command: 'restore'
+      feedsToUse: 'select'
+  - task: DotNetCoreCLI@2
+    inputs:
+      command: 'build'
+  - task: DotNetCoreCLI@2
+    inputs:
+      command: 'test'
+  - task: DotNetCoreCLI@2
+    inputs:
+      command: 'publish'
+      publishWebProjects: true
+  - task: CopyFiles@2
+    inputs:
+      Contents: '**'
+      TargetFolder:
+  - task: PublishBuildArtifacts@1
+    inputs:
+      PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+      ArtifactName: 'drop'
+      publishLocation: 'Container'
